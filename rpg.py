@@ -1,86 +1,8 @@
 
-class Entidade(object):
-
-	def __init__(self, nome):
-
-		self.nome = nome
-
-	def get_nome(self):
-
-		return self.nome
-
-class NPC(Entidade):
-
-	def __init__(self, nome):
-
-		super().__init__(nome)
-
-
-class Jogador(Entidade):
-
-	def __init__(self, nome, mundo_atual, area_atual):
-
-		super().__init__(nome)
-		self.mundo_atual = mundo_atual
-		self.area_atual = area_atual
-
-	def get_nome_mundo_atual(self):
-
-		return self.mundo_atual.get_nome()		
-
-	def get_nome_area_atual(self):
-
-		return self.area_atual.get_nome()
-
-	def set_mundo_atual(self, mundo_atual):
-
-		self.mundo_atual = mundo_atual
-
-	def set_area_atual(self, area_atual):
-
-		self.area_atual = area_atual
-
-	def set_area_atual_por_nome(self, nome_area_atual):
-
-		self.area_atual = self.mundo_atual.areas[nome_area_atual]
-
-class Area(Entidade):
-
-	def __init__(self, nome, lista_npcs):
-
-		super().__init__(nome)
-		self.lista_npcs = []
-
-	def set_npcs(npcs):
-
-		self.lista_npcs = npcs
-
-	def __str__(self):
-
-		return self.get_nome()
-
-class Mundo(object):
-
-	def __init__(self, nome):
-
-		self.nome = nome
-		self.areas = {}
-
-	def get_nome(self):
-
-		return self.nome
-
-	def set_area(self, area):
-
-		self.areas[area.get_nome()] = area
-
-	def get_area(self, nome_area):
-
-		return self.areas[nome_area]
-
-	def get_todas_areas(self):
-
-		return [''.join(k[0]) for k in self.areas.items()]
+from npc import *
+from area import *
+from jogador import *
+from mundo import *
 
 
 class Jogo(object):
@@ -134,7 +56,17 @@ class Jogo(object):
 	def menu_mover(self):
 
 		self.listar_areas()
-		return input()
+		
+		try:
+
+			area_escolhida = input()
+			return area_escolhida
+
+		except:
+
+			print("[ERRO] A Área escolhida é inválida!")
+			return ""
+
 
 	def logica(self):
 
@@ -148,7 +80,8 @@ class Jogo(object):
 
 				area = self.menu_mover()
 				
-				self.jogador.set_area_atual_por_nome(area)
+				if (area):
+					self.jogador.set_area_atual_por_nome(area)
 
 			elif (resposta == "listar_areas"):
 				self.listar_areas()
