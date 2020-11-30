@@ -4,98 +4,225 @@ from area import *
 from jogador import *
 from mundo import *
 
+from estados import *
+from constantes import *
+from gerenciador_de_comandos import *
+from gerenciador_de_erros import *
+from gerenciador_de_mundos import *
+from assistente_de_entrada import *
+
 
 class Jogo(object):
 
 	def __init__(self):
 
-		self.verm = Mundo("Vermillion")
-		self.azz = Mundo("Azzure")
 		self.jogador = None
 		self.jogando = True
+		self.gerenciador_de_erros = GerenciadorDeErros()
+		self.gerenciador_de_comandos = GerenciadorDeComandos(self.gerenciador_de_erros)
+		self.gerenciador_de_mundos = GerenciadorDeMundos()
+		self.todas_areas_do_mundo_atual = ()
+		self.comandos = ()
+		self.mundos = ()
 
-	# popular entidades dos mundos
+	def mostrar_texto(self, texto):
+
+		print(texto)
+
+		return SUCESSO
+
+
+	def mostrar_texto_dict(self, dicionario):
+
+		texto = dicionario.get('texto')
+
+		if (texto is None):
+
+			return self.gerenciador_de_erros.notificar_erro("[-] Texto do dicionário não existe!", apenas_debug = True)
+
+		self.mostrar_texto(texto)
+
+		return SUCESSO
+
+
+	def sair(self):
+
+		self.jogando = False
+
+
 	def iniciar(self):
 
-		# npcs
+		"""
 
-		verm_cdt_npcs = ( NPC("verm_cdt_01"), NPC("verm_cdt_02") )
-		verm_alt_npcs = ( NPC("verm_alt_01"), NPC("verm_alt_02") )
+		Areas
 
-		azz_cdt_npcs = ( NPC("azz_cdt_01"), NPC("azz_cdt_02") )
-		azz_alt_npcs = ( NPC("azz_alt_01"), NPC("azz_alt_02") )
-		
-		# locais
+		"""
 
-		verm_cdt = Area("Campo de Treinamento", verm_cdt_npcs)
-		verm_alt = Area("Altar", verm_alt_npcs)
+		vermecia = Mundo("Vermécia")
+		ellia = Mundo("Ellia")
 
-		azz_cdt = Area("Campo de Treinamento", azz_cdt_npcs)
-		azz_alt = Area("Altar", azz_alt_npcs)
+		vermecia.set_areas(
 
-		self.verm.set_area(verm_cdt)
-		self.verm.set_area(verm_alt)
+			(
+				Area("Campo de Treinamento",
+					(
+						NPC("Lothus"),
+						NPC("Sieghart")
+					)
+				),
+				Area("Altar",
+					(
+						NPC("Priest"),
+						NPC("Viajante")
+					)
+				)
+			)
 
-		self.azz.set_area(azz_cdt)
-		self.azz.set_area(azz_alt)
+		)
 
-		# jogador
+		ellia.set_areas(
 
-		#nome_jogador = input("Digite o nome do jogador : ")
-		nome_jogador = "Thiago"
-		self.jogador = Jogador(nome_jogador, self.verm, self.verm.get_area("Campo de Treinamento"))
+			(
+				Area("Campo de Treinamento",
+					(
+						NPC("Amon"),
+						NPC("Darkatt")
+					)
+				),
+				Area("Altar",
+					(
+						NPC("Darkpriest"),
+						NPC("Guarda Amon")
+					)
+				)
+			)
 
-		print(self.get_localizacao_jogador())
+		)
+
+		self.gerenciador_de_mundos.set_lista_de_mundos((vermecia, ellia))
+
+
+		"""
+
+		Jogador
+
+		"""
+
+
+		self.jogador = Jogador("Thiago", vermecia, vermecia.get_area("Campo de Treinamento"), self.gerenciador_de_erros)
+
+		self.mostrar_texto_dict(self.jogador.get_localizacao_jogador_formatado())
+
+
+		"""
+
+		Comandos & Despachos
+
+
+		"""
+
+
+		self.gerenciador_de_comandos.associar_comando_a_funcao(
+			comando = "mover",
+			funcao_de_despacho = self.jogador.mover,
+			depende_de = (self.menu_mover,)
+		)
+
+		"""
+		self.gerenciador_de_comandos.associar_comando_a_funcao(
+			comando = "listar_mundos",
+			funcao_de_despacho = self.listar_mundos
+		)
+		"""
+
+		self.gerenciador_de_comandos.associar_comando_a_funcao(
+			comando = "listar_areas_do_mundo_atual",
+			funcao_de_despacho = self.listar_areas_do_mundo_atual
+		)
+
+		self.gerenciador_de_comandos.associar_comando_a_funcao(
+			comando = "localizacao",
+			funcao_de_despacho = self.mostrar_texto,
+			depende_de = (self.jogador.get_localizacao_jogador_formatado,)
+		)
+
+		self.gerenciador_de_comandos.associar_comando_a_funcao(
+			comando = "sair",
+			funcao_de_despacho = self.sair
+		)
+
+		self.comandos = self.gerenciador_de_comandos.get_lista_de_comandos()
+
+		self.mundos = self.gerenciador_de_mundos.get_lista_de_mundos()
+
+		self.todas_areas_do_mundo_atual = self.jogador.get_mundo_atual().get_todas_areas()
+
+		self.assistente_de_entrada = AssistenteDeEntrada(
+			todas_listas_de_opcoes = (
+				self.comandos,
+				self.mundos,
+				self.todas_areas_do_mundo_atual
+			),
+			lista_de_opcoes_atual = self.comandos
+		)
 
 		self.logica()
 
-	def listar_areas(self):
 
-		print(self.verm.get_todas_areas())
+	def listar_areas_do_mundo_atual(self):
+
+		self.todas_areas_do_mundo_atual = self.jogador.get_mundo_atual().get_todas_areas()
+
+		self.mostrar_texto(', '.join(self.todas_areas_do_mundo_atual))
+
+
+	def listar_mundos(self):
+
+		self.mostrar_texto(', '.join(self.mundos))
 
 	def menu_mover(self):
 
-		self.listar_areas()
-		
+		self.listar_areas_do_mundo_atual()
+
 		try:
 
 			area_escolhida = input()
-			return area_escolhida
+
+			if not (area_escolhida in self.todas_areas_do_mundo_atual):
+
+				return self.gerenciador_de_erros.notificar_erro("[!] Escolha uma área válida!")
+
+			return dict(area_escolhida = area_escolhida,
+						erro = False,
+						mensagem_de_erro = VAZIO)
 
 		except:
 
-			print("[ERRO] A Área escolhida é inválida!")
-			return ""
+			return self.gerenciador_de_erros.notificar_erro("[!] Escolha uma área válida!")
+
 
 
 	def logica(self):
 
-		resposta = ""
-
 		while (self.jogando):
 
-			resposta = input("R: ")
+			lista_escolhida = self.comandos
 
-			if (resposta == "mover"):
+			entrada = self.assistente_de_entrada.requisitar("R: ")
 
-				area = self.menu_mover()
-				
-				if (area):
-					self.jogador.set_area_atual_por_nome(area)
+			if entrada in self.assistente_de_entrada.get_entradas_validas():
 
-			elif (resposta == "listar_areas"):
-				self.listar_areas()
+				lista_escolhida = self.assistente_de_entrada.get_lista_da_entrada(entrada)
 
-			elif (resposta == "loc"):
-				print(self.get_localizacao_jogador())
+				if lista_escolhida is None:
+					continue
 
-			elif (resposta == "sair"):
-				self.jogando = False
+			self.gerenciador_de_comandos.invocar_funcao_de_despacho(entrada)
 
-	def get_localizacao_jogador(self):
+			self.assistente_de_entrada.atualizar_lista_de_opcoes(lista_escolhida)
 
-		return "[Localização] : " + self.jogador.get_nome_mundo_atual() + \
-			  " - " + self.jogador.get_nome_area_atual()
+			self.gerenciador_de_erros.logica()
+
 
 if __name__ == "__main__":
 
