@@ -8,7 +8,7 @@ class AssistenteDeEntrada(object):
 
 	def __init__(self, todas_listas_de_opcoes = (), lista_de_opcoes_atual = ()):
 
-		self.todas_listas_de_opcoes = ()
+		self.todas_listas_de_opcoes = todas_listas_de_opcoes
 
 		self.SUGESTOR = WordCompleter(
 			lista_de_opcoes_atual,
@@ -51,5 +51,26 @@ class AssistenteDeEntrada(object):
 			if entrada in lista:
 
 				return lista
+
+		return None
+
+
+	def get_lista_correspondente(self, entrada):
+
+		#print(f"[!] {entrada}")
+
+		entradas_validas = self.get_entradas_validas()
+
+		#print(f"[!] {entradas_validas}")
+
+		if entrada in entradas_validas:
+
+			lista_escolhida = self.get_lista_da_entrada(entrada)
+
+			#print(f"[+] {lista_escolhida}")
+
+			return lista_escolhida
+
+		#print(f"[!] Nenhuma correspondência para com a entrada!")
 
 		return None

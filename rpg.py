@@ -50,6 +50,11 @@ class Jogo(object):
 		self.jogando = False
 
 
+	def ajuda(self):
+
+		self.mostrar_texto("[+] Pressione TAB para listar as opções disponíveis!")
+
+
 	def iniciar(self):
 
 		"""
@@ -128,6 +133,11 @@ class Jogo(object):
 			depende_de = (self.menu_mover,)
 		)
 
+		self.gerenciador_de_comandos.associar_comando_a_funcao(
+			comando = "ajuda",
+			funcao_de_despacho = self.ajuda
+		)
+
 		"""
 		self.gerenciador_de_comandos.associar_comando_a_funcao(
 			comando = "listar_mundos",
@@ -180,17 +190,25 @@ class Jogo(object):
 
 		self.mostrar_texto(', '.join(self.mundos))
 
+
 	def menu_mover(self):
 
 		self.listar_areas_do_mundo_atual()
 
 		try:
 
-			area_escolhida = input()
+			self.assistente_de_entrada.atualizar_lista_de_opcoes(self.todas_areas_do_mundo_atual)
 
-			if not (area_escolhida in self.todas_areas_do_mundo_atual):
+			area_escolhida = self.assistente_de_entrada.requisitar("R: ")
+
+			if not (area_escolhida in self.todas_areas_do_mundo_atual) or area_escolhida is None:
 
 				return self.gerenciador_de_erros.notificar_erro("[!] Escolha uma área válida!")
+				"""
+				return dict(area_escolhida = area_escolhida,
+						erro = True,
+						mensagem_de_erro = "[!] Escolha uma área válida!")
+				"""
 
 			return dict(area_escolhida = area_escolhida,
 						erro = False,
@@ -201,7 +219,6 @@ class Jogo(object):
 			return self.gerenciador_de_erros.notificar_erro("[!] Escolha uma área válida!")
 
 
-
 	def logica(self):
 
 		while (self.jogando):
@@ -210,12 +227,12 @@ class Jogo(object):
 
 			entrada = self.assistente_de_entrada.requisitar("R: ")
 
-			if entrada in self.assistente_de_entrada.get_entradas_validas():
+			lista_correspondente = self.assistente_de_entrada.get_lista_correspondente(entrada)
+			
+			if (lista_correspondente is None):
+				continue
 
-				lista_escolhida = self.assistente_de_entrada.get_lista_da_entrada(entrada)
-
-				if lista_escolhida is None:
-					continue
+			lista_escolhida = lista_correspondente
 
 			self.gerenciador_de_comandos.invocar_funcao_de_despacho(entrada)
 
