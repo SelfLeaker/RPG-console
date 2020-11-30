@@ -4,7 +4,7 @@ class GerenciadorDeErros(object):
 	def __init__(self):
 
 		self.mensagens_de_erro = []
-		self.debugging = False
+		self.debugging = True
 
 
 	def adicionar_mensagem_de_erro(self, mensagem_de_erro, apenas_debug):

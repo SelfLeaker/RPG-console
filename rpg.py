@@ -201,14 +201,9 @@ class Jogo(object):
 
 			area_escolhida = self.assistente_de_entrada.requisitar("R: ")
 
-			if not (area_escolhida in self.todas_areas_do_mundo_atual) or area_escolhida is None:
-
+			if not (area_escolhida in self.todas_areas_do_mundo_atual):
+				
 				return self.gerenciador_de_erros.notificar_erro("[!] Escolha uma área válida!")
-				"""
-				return dict(area_escolhida = area_escolhida,
-						erro = True,
-						mensagem_de_erro = "[!] Escolha uma área válida!")
-				"""
 
 			return dict(area_escolhida = area_escolhida,
 						erro = False,

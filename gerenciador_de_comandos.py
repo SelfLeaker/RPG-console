@@ -39,13 +39,15 @@ class GerenciadorDeComandos(object):
 
 				if (retorno['erro']):
 
-					return self.gerenciador_de_erros.notificar_erro(f"[-] Erro ao invocar o despacho da função {comando}!", apenas_debug = True)
+					return retorno
 
 				for e in ['erro', 'mensagem_de_erro']:
 
 					retorno.pop(e)
 
 				self.associar_comando_a_argumentos(comando, **retorno)
+
+		return SUCESSO
 
 
 	def invocar_funcao_de_despacho(self, comando):
@@ -54,7 +56,11 @@ class GerenciadorDeComandos(object):
 
 			return self.gerenciador_de_erros.notificar_erro(f"[-] Comando {comando} inválido ou não implementado!")
 
-		self.__logica_variaveis_funcoes(comando)
+		retorno = self.__logica_variaveis_funcoes(comando)
+
+		if (retorno['erro']):
+
+			return retorno
 
 		argumentos_de_despacho = self.recuperar_argumentos(comando)
 
